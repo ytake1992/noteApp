@@ -1,0 +1,10 @@
+version: '3.7'
+services:
+  react:
+    build: ./front
+    container_name: front
+    tty: true
+    volumes:
+      - ./front/src:/app
+    ports:
+      - "5173:5173"
