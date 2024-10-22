@@ -49,6 +49,13 @@ const GanttCalender:React.FC<Props> = ({start, end, blockSize, calendarWidth, ca
             scrollObserver.observe(leftScrollRef.current)
             scrollObserver.observe(rightScrollRef.current)
         }
+        
+        return () => {
+            if (leftScrollRef.current && rightScrollRef.current) {
+                scrollObserver.unobserve(leftScrollRef.current)
+                scrollObserver.unobserve(rightScrollRef.current)
+            }
+        }
     },[start]);
 
     const scrollDistance = (today:Date) => {
