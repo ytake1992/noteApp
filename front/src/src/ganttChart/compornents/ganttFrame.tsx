@@ -49,13 +49,11 @@ const Titles:headertitle[] = [
 const GanttFrame:React.FC<dataType> = ({projects, tasks}) => {
     const [calendarWidth, setCalendarWidth ] = useState<number>(0)
     const [calendarHeigth, setCalendarHeigth ] = useState<number>(0)
-    const [startMonth, setStartMonth] = useState<Date>(getFirstDate(dateAdd(getToday(), -2, 'month')));
-    const [endMonth, setEndMonth] = useState<Date>(getLastDate(dateAdd(getToday(), 2, 'month')));
+    const [startMonth, setStartMonth] = useState<string>(dateFormat(getFirstDate(dateAdd(getToday(), -2, 'month')),'yyyy-MM-dd'));
+    const [endMonth, setEndMonth] = useState<string>(dateFormat(getLastDate(dateAdd(getToday(), 2, 'month')),'yyyy-MM-dd'));
 
-    const [refData, setRefDate] = useState({
-        projects: setProjectDate(projects, tasks),
-        tasks:tasks
-    })
+    const [refProjectData, setRefProjectData] = useState<projectType[]>(setProjectDate(projects, tasks));
+    const [refTaskData, setRefTaskDate] = useState<taskType[]>(structuredClone(tasks))
 
     useEffect(() => {
         getWindowSize();
@@ -70,50 +68,47 @@ const GanttFrame:React.FC<dataType> = ({projects, tasks}) => {
     }
 
     const calendarStatus = {
-        start:startMonth,
-        end:endMonth,
+        start:dateParse(startMonth,'yyyy-MM-dd'),
+        end:dateParse(endMonth,'yyyy-MM-dd'),
         blockSize:30,
         calendarWidth:calendarWidth,
         calendarHeigth:calendarHeigth
     }
     
     const shiftMonth = (offset:number) => {
-        const newStartMonth = dateAdd(startMonth, offset, 'month')
-        const newEndMonth = dateAdd(endMonth, offset, 'month')
-        setStartMonth(newStartMonth);
-        setEndMonth(newEndMonth);
+        const newStartMonth = dateAdd(dateParse(startMonth,'yyyy-MM-dd'), offset, 'month')
+        const newEndMonth = dateAdd(dateParse(endMonth,'yyyy-MM-dd'), offset, 'month')
+        setStartMonth(dateFormat(newStartMonth, 'yyyy-MM-dd'));
+        setEndMonth(dateFormat(newEndMonth, 'yyyy-MM-dd'));
     }
 
     const taskMove = (taskId:number, offset:number) => {
-        let newTasks = structuredClone(refData.tasks);
+        let newTasks = structuredClone(tasks);
         let newTask = newTasks.find(task => task.id === taskId);
         if (newTask) {
-            debugger
             let startDate = dateAdd(dateParse(newTask.startDate,'yyyy-MM-dd'), offset, 'day');
             let endDate = dateAdd(dateParse(newTask.endDate,'yyyy-MM-dd'), offset, 'day');
             newTask['startDate'] = dateFormat(startDate,'yyyy-MM-dd');
             newTask['endDate'] = dateFormat(endDate,'yyyy-MM-dd');
         }
-        setRefDate({
-            projects: [...refData.projects],
-            tasks : newTasks
-        });
+        setRefProjectData([...setProjectDate(projects, newTasks)]);
+        setRefTaskDate([...(newTasks)]);
     }
 
     return (
         <div id="gantt-content" className="flex">
             <div id="gantt-task">
                 <GanttTaskHeader titles={Titles}/>
-                {refData.projects.map((project, index) => {
-                    const projectTasks = getProjectFilter(project.id, refData.tasks)
+                {refProjectData.map((project, index) => {
+                    const projectTasks = getProjectFilter(project.id, refTaskData)
                     return (
                         <TaskItems key={index} project={project} tasks={projectTasks}/>
                     )
                 })}
             </div>
-            
+
             <GanttCalender {...calendarStatus} shiftMonthFn={shiftMonth}>
-                <TaskBarItems projects={refData.projects} tasks={refData.tasks} {...calendarStatus} taskMove={taskMove}/>
+                <TaskBarItems projects={refProjectData} tasks={refTaskData} {...calendarStatus} taskMove={taskMove}/>
             </GanttCalender>
         </div>
     )

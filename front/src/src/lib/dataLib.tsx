@@ -1,7 +1,7 @@
 import { projectType, taskType } from "../ganttChart/type/dataType";
 
 const setProjectDate = (projects:projectType[], tasks:taskType[]):projectType[] => {
-    let resultProjects = {...projects}
+    let resultProjects = structuredClone(projects);
     resultProjects = projects.map((project) => {
         const projectTasks = getProjectFilter(project.id, tasks);
         if (projectTasks.length > 0) {

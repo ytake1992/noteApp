@@ -69,13 +69,13 @@ const GanttCalender:React.FC<Props> = ({start, end, blockSize, calendarWidth, ca
             if (calendarRef.current) {
                 setScrollPosition(calendarRef.current.scrollLeft + numberOfDaysLastMonth * blockSize);
             }
-            shiftMonthFn(start, end, -1);
+            shiftMonthFn(-1);
         } else {
             const numberOfDaysThisMonth = getLastDate(start).getDate();
             if (calendarRef.current) {
                 setScrollPosition(calendarRef.current.scrollLeft - numberOfDaysThisMonth * blockSize);
             }
-            shiftMonthFn(start, end, 1);
+            shiftMonthFn(1);
         }
     }
 

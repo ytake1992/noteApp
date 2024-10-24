@@ -96,7 +96,7 @@ const TaskBarItems:React.FC<dataType> = ({start, blockSize, calendarWidth, calen
         return {projects: projectBars, tasks:taskBars}
     }
 
-    const taskBars = getTaskBars(projects, tasks, )
+    const taskBars = getTaskBars(projects, tasks)
 
     useEffect(() => {
         window.addEventListener('mousemove', (e) => {mouseMove(e)});
@@ -141,8 +141,12 @@ const TaskBarItems:React.FC<dataType> = ({start, blockSize, calendarWidth, calen
             let days = Math.round(diff / blockSize);
             if (days !== 0) {
                 taskMove(barStatus.taskId, days);
+            } else {
+                barStatus.animationLeft = barStatus.left;
+                taskBarAnimation();
             }
         }
+        
 
         barStatus.dragging = false
     });
