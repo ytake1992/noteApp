@@ -8,7 +8,7 @@ import TaskItems from './taskItems';
 import TaskBarItems from './taskBarItems';
 
 import type { projectType, taskType } from '../type/dataType';
-import { setProjectDate, getProjectFilter } from '../../lib/dataLib';
+import { setProjectDate, getProjectFilter, setTaskDate } from '../../lib/dataLib';
 
 import { getToday, dateAdd, getFirstDate, getLastDate, dateParse, dateFormat } from '../../lib/dateLib'
 
@@ -53,7 +53,7 @@ const GanttFrame:React.FC<dataType> = ({projects, tasks}) => {
     const [endMonth, setEndMonth] = useState<string>(dateFormat(getLastDate(dateAdd(getToday(), 2, 'month')),'yyyy-MM-dd'));
 
     const [refProjectData, setRefProjectData] = useState<projectType[]>(setProjectDate(projects, tasks));
-    const [refTaskData, setRefTaskDate] = useState<taskType[]>(structuredClone(tasks))
+    const [refTaskData, setRefTaskDate] = useState<taskType[]>(setTaskDate(tasks));
 
     useEffect(() => {
         getWindowSize();
@@ -83,7 +83,7 @@ const GanttFrame:React.FC<dataType> = ({projects, tasks}) => {
     }
 
     const taskMove = (taskId:number, offset:number) => {
-        let newTasks = structuredClone(tasks);
+        let newTasks = tasks;
         let newTask = newTasks.find(task => task.id === taskId);
         if (newTask) {
             let startDate = dateAdd(dateParse(newTask.startDate,'yyyy-MM-dd'), offset, 'day');
@@ -91,8 +91,8 @@ const GanttFrame:React.FC<dataType> = ({projects, tasks}) => {
             newTask['startDate'] = dateFormat(startDate,'yyyy-MM-dd');
             newTask['endDate'] = dateFormat(endDate,'yyyy-MM-dd');
         }
-        setRefProjectData([...setProjectDate(projects, newTasks)]);
-        setRefTaskDate([...(newTasks)]);
+        setRefProjectData(setProjectDate(projects, newTasks));
+        setRefTaskDate(setTaskDate(newTasks));
     }
 
     return (
