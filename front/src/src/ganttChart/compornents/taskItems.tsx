@@ -13,7 +13,7 @@ const TaskItems:React.FC<dataType> = ({project, tasks}) => {
     return (
         <div id="gantt-task-list">
             <div className="flex h-10 border-b">
-                <div className="flex items-center font-bold w-full text-sm pl-2">
+                <div className="flex items-center font-bold w-full text-sm pl-2  justify-between bg-teal-100">
                     {project.name}
                 </div>
             </div>
@@ -38,7 +38,6 @@ const TaskItems:React.FC<dataType> = ({project, tasks}) => {
                         </div>
                     )
                 })}
-
         </div>
     )
 }

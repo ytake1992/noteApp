@@ -49,8 +49,8 @@ const Titles:headertitle[] = [
 const GanttFrame:React.FC<dataType> = ({projects, tasks}) => {
     const [calendarWidth, setCalendarWidth ] = useState<number>(0)
     const [calendarHeigth, setCalendarHeigth ] = useState<number>(0)
-    const [startMonth, setStartMonth] = useState<string>(dateFormat(getFirstDate(dateAdd(getToday(), -2, 'month')),'yyyy-MM-dd'));
-    const [endMonth, setEndMonth] = useState<string>(dateFormat(getLastDate(dateAdd(getToday(), 2, 'month')),'yyyy-MM-dd'));
+    const [startMonth, setStartMonth] = useState<Date>(getFirstDate(dateAdd(getToday(), -2, 'month')));
+    const [endMonth, setEndMonth] = useState<Date>(getLastDate(dateAdd(getToday(), 2, 'month')));
 
     const [refProjectData, setRefProjectData] = useState<projectType[]>(setProjectDate(projects, tasks));
     const [refTaskData, setRefTaskDate] = useState<taskType[]>(setTaskDate(tasks));
@@ -68,18 +68,18 @@ const GanttFrame:React.FC<dataType> = ({projects, tasks}) => {
     }
 
     const calendarStatus = {
-        start:dateParse(startMonth,'yyyy-MM-dd'),
-        end:dateParse(endMonth,'yyyy-MM-dd'),
+        start:startMonth,
+        end:endMonth,
         blockSize:30,
         calendarWidth:calendarWidth,
         calendarHeigth:calendarHeigth
     }
     
     const shiftMonth = (offset:number) => {
-        const newStartMonth = dateAdd(dateParse(startMonth,'yyyy-MM-dd'), offset, 'month')
-        const newEndMonth = dateAdd(dateParse(endMonth,'yyyy-MM-dd'), offset, 'month')
-        setStartMonth(dateFormat(newStartMonth, 'yyyy-MM-dd'));
-        setEndMonth(dateFormat(newEndMonth, 'yyyy-MM-dd'));
+        const newStartMonth = dateAdd(startMonth, offset, 'month')
+        const newEndMonth = dateAdd(endMonth, offset, 'month')
+        setStartMonth(newStartMonth);
+        setEndMonth(newEndMonth);
     }
 
     const taskMove = (taskId:number, startOffset:number, endOffset:number) => {
