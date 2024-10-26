@@ -82,12 +82,12 @@ const GanttFrame:React.FC<dataType> = ({projects, tasks}) => {
         setEndMonth(dateFormat(newEndMonth, 'yyyy-MM-dd'));
     }
 
-    const taskMove = (taskId:number, offset:number) => {
+    const taskMove = (taskId:number, startOffset:number, endOffset:number) => {
         let newTasks = tasks;
         let newTask = newTasks.find(task => task.id === taskId);
         if (newTask) {
-            let startDate = dateAdd(dateParse(newTask.startDate,'yyyy-MM-dd'), offset, 'day');
-            let endDate = dateAdd(dateParse(newTask.endDate,'yyyy-MM-dd'), offset, 'day');
+            let startDate = dateAdd(dateParse(newTask.startDate,'yyyy-MM-dd'), startOffset, 'day');
+            let endDate = dateAdd(dateParse(newTask.endDate,'yyyy-MM-dd'), endOffset, 'day');
             newTask['startDate'] = dateFormat(startDate,'yyyy-MM-dd');
             newTask['endDate'] = dateFormat(endDate,'yyyy-MM-dd');
         }
