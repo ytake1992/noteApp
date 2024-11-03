@@ -8,7 +8,7 @@ import TaskItems from './taskItems';
 import TaskBarItems from './taskBarItems';
 
 import type { projectType, taskType } from '../type/dataType';
-import { setProjectDate, getProjectFilter } from '../../lib/dataLib';
+import { setProjectDate, getProjectFilter, setTaskDate } from '../../lib/dataLib';
 
 import { getToday, dateAdd, getFirstDate, getLastDate, dateParse, dateFormat } from '../../lib/dateLib'
 
@@ -49,14 +49,15 @@ const Titles:headertitle[] = [
 const GanttFrame:React.FC<dataType> = ({projects, tasks}) => {
     const [calendarWidth, setCalendarWidth ] = useState<number>(0)
     const [calendarHeigth, setCalendarHeigth ] = useState<number>(0)
-    const [startMonth, setStartMonth] = useState<string>(dateFormat(getFirstDate(dateAdd(getToday(), -2, 'month')),'yyyy-MM-dd'));
-    const [endMonth, setEndMonth] = useState<string>(dateFormat(getLastDate(dateAdd(getToday(), 2, 'month')),'yyyy-MM-dd'));
+    const [startMonth, setStartMonth] = useState<Date>(getFirstDate(dateAdd(getToday(), -2, 'month')));
+    const [endMonth, setEndMonth] = useState<Date>(getLastDate(dateAdd(getToday(), 2, 'month')));
 
     const [refProjectData, setRefProjectData] = useState<projectType[]>(setProjectDate(projects, tasks));
-    const [refTaskData, setRefTaskDate] = useState<taskType[]>(structuredClone(tasks))
+    const [refTaskData, setRefTaskDate] = useState<taskType[]>(setTaskDate(tasks));
 
     useEffect(() => {
         getWindowSize();
+        window.addEventListener('resize', getWindowSize)
     },[]);
     
     const getWindowSize = () => {
@@ -68,31 +69,40 @@ const GanttFrame:React.FC<dataType> = ({projects, tasks}) => {
     }
 
     const calendarStatus = {
-        start:dateParse(startMonth,'yyyy-MM-dd'),
-        end:dateParse(endMonth,'yyyy-MM-dd'),
+        start:startMonth,
+        end:endMonth,
         blockSize:30,
         calendarWidth:calendarWidth,
         calendarHeigth:calendarHeigth
     }
     
     const shiftMonth = (offset:number) => {
-        const newStartMonth = dateAdd(dateParse(startMonth,'yyyy-MM-dd'), offset, 'month')
-        const newEndMonth = dateAdd(dateParse(endMonth,'yyyy-MM-dd'), offset, 'month')
-        setStartMonth(dateFormat(newStartMonth, 'yyyy-MM-dd'));
-        setEndMonth(dateFormat(newEndMonth, 'yyyy-MM-dd'));
+        const newStartMonth = dateAdd(startMonth, offset, 'month')
+        const newEndMonth = dateAdd(endMonth, offset, 'month')
+        setStartMonth(newStartMonth);
+        setEndMonth(newEndMonth);
     }
 
-    const taskMove = (taskId:number, offset:number) => {
-        let newTasks = structuredClone(tasks);
+    const taskMove = (taskId:number, startOffset:number, endOffset:number) => {
+        let newTasks = tasks;
         let newTask = newTasks.find(task => task.id === taskId);
         if (newTask) {
-            let startDate = dateAdd(dateParse(newTask.startDate,'yyyy-MM-dd'), offset, 'day');
-            let endDate = dateAdd(dateParse(newTask.endDate,'yyyy-MM-dd'), offset, 'day');
+            let startDate = dateAdd(dateParse(newTask.startDate,'yyyy-MM-dd'), startOffset, 'day');
+            let endDate = dateAdd(dateParse(newTask.endDate,'yyyy-MM-dd'), endOffset, 'day');
             newTask['startDate'] = dateFormat(startDate,'yyyy-MM-dd');
             newTask['endDate'] = dateFormat(endDate,'yyyy-MM-dd');
         }
-        setRefProjectData([...setProjectDate(projects, newTasks)]);
-        setRefTaskDate([...(newTasks)]);
+        setRefProjectData(setProjectDate(projects, newTasks));
+        setRefTaskDate(setTaskDate(newTasks));
+    }
+    
+    const setCollapsed = (projectId:number) => {
+        let newProjects = projects;
+        let newProject = newProjects.find(project => project.id === projectId);
+        if (newProject) {
+            newProject['collapsed'] = !newProject['collapsed'];
+        }
+        setRefProjectData(setProjectDate(projects, tasks));
     }
 
     return (
@@ -102,7 +112,7 @@ const GanttFrame:React.FC<dataType> = ({projects, tasks}) => {
                 {refProjectData.map((project, index) => {
                     const projectTasks = getProjectFilter(project.id, refTaskData)
                     return (
-                        <TaskItems key={index} project={project} tasks={projectTasks}/>
+                        <TaskItems key={index} project={project} tasks={projectTasks} setCollapsed={setCollapsed}/>
                     )
                 })}
             </div>
