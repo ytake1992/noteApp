@@ -57,6 +57,7 @@ const GanttFrame:React.FC<dataType> = ({projects, tasks}) => {
 
     useEffect(() => {
         getWindowSize();
+        window.addEventListener('resize', getWindowSize)
     },[]);
     
     const getWindowSize = () => {
@@ -94,6 +95,15 @@ const GanttFrame:React.FC<dataType> = ({projects, tasks}) => {
         setRefProjectData(setProjectDate(projects, newTasks));
         setRefTaskDate(setTaskDate(newTasks));
     }
+    
+    const setCollapsed = (projectId:number) => {
+        let newProjects = projects;
+        let newProject = newProjects.find(project => project.id === projectId);
+        if (newProject) {
+            newProject['collapsed'] = !newProject['collapsed'];
+        }
+        setRefProjectData(setProjectDate(projects, tasks));
+    }
 
     return (
         <div id="gantt-content" className="flex">
@@ -102,7 +112,7 @@ const GanttFrame:React.FC<dataType> = ({projects, tasks}) => {
                 {refProjectData.map((project, index) => {
                     const projectTasks = getProjectFilter(project.id, refTaskData)
                     return (
-                        <TaskItems key={index} project={project} tasks={projectTasks}/>
+                        <TaskItems key={index} project={project} tasks={projectTasks} setCollapsed={setCollapsed}/>
                     )
                 })}
             </div>

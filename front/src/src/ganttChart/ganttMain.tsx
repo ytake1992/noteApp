@@ -7,12 +7,14 @@ const GanttMain:React.FC = () => {
                 id: 1,
                 name: 'テストA',
                 startDate: null,
-                endDate: null
+                endDate: null,
+                collapsed: false,
             }, {
                 id: 2,
                 name: 'テストB',
                 startDate: null,
-                endDate: null
+                endDate: null,
+                collapsed: false,
             }
         ],
         tasks: [

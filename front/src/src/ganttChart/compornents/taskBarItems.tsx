@@ -1,4 +1,3 @@
-// import { CSSProperties } from "react";
 import { CSSProperties, Key, useEffect } from "react";
 import { dateDiff, dateParse } from "../../lib/dateLib";
 import type { calenderStatus } from "./ganttCalender";
@@ -49,7 +48,7 @@ let barStatus:barStatusType = {
     animationWidth : 0,
 }
 
-const TaskBarItems:React.FC<dataType> = ({start, blockSize, calendarWidth, calendarHeigth, projects, tasks, taskMove}) => {
+const TaskBarItems:React.FC<dataType> = ({start, end, blockSize, calendarWidth, calendarHeigth, projects, tasks, taskMove}) => {
     const getTaskBars = (projects:projectType[], tasks:taskType[]) => {
         let startDate = new Date(start.getTime());
         let top = 10;
@@ -68,6 +67,7 @@ const TaskBarItems:React.FC<dataType> = ({start, blockSize, calendarWidth, calen
             if (project.startDate && project.endDate) {
                 dateFrom = dateParse(project.startDate, 'yyyy-MM-dd');
                 dateTo = dateParse(project.endDate, 'yyyy-MM-dd');
+                dateTo = dateTo <= end ? dateTo : end;
                 between = dateDiff(dateFrom, dateTo, 'day') +1;
                 let start = dateDiff(startDate, dateFrom,'day');
                 left = start * blockSize;
@@ -82,29 +82,32 @@ const TaskBarItems:React.FC<dataType> = ({start, blockSize, calendarWidth, calen
                 project
             })
             top += 40;
-            projectTasks.forEach(task => {
-                style = {}
-                let dateFrom = dateParse(task.startDate, 'yyyy-MM-dd');
-                let dateTo = dateParse(task.endDate, 'yyyy-MM-dd');
-                between = dateDiff(dateFrom, dateTo, 'day') +1;
-                let start = dateDiff(startDate, dateFrom, 'day');
-                left = start * blockSize;
-                style = {
-                    top: `${top}px`,
-                    left: `${left}px`,
-                    width: `${blockSize * between}px`,
-                }
-                top = top + 40;
-                taskBars.push({
-                style,
-                task
+            if (!project.collapsed) {
+                projectTasks.forEach(task => {
+                    style = {}
+                    let dateFrom = dateParse(task.startDate, 'yyyy-MM-dd');
+                    let dateTo = dateParse(task.endDate, 'yyyy-MM-dd');
+                    dateTo = dateTo <= end ? dateTo : end;
+                    between = dateDiff(dateFrom, dateTo, 'day') +1;
+                    let start = dateDiff(startDate, dateFrom, 'day');
+                    left = start * blockSize;
+                    style = {
+                        top: `${top}px`,
+                        left: `${left}px`,
+                        width: `${blockSize * between}px`,
+                    }
+                    top = top + 40;
+                    taskBars.push({
+                    style,
+                    task
+                    })
                 })
-            })
+            }
         })
         return {projects: projectBars, tasks:taskBars}
     }
 
-    const taskBars = getTaskBars(projects, tasks)
+    let taskBars = getTaskBars(projects, tasks);
 
     useEffect(() => {
         window.addEventListener('mousemove', (e) => {mouseMove(e)});
@@ -116,7 +119,7 @@ const TaskBarItems:React.FC<dataType> = ({start, blockSize, calendarWidth, calen
             window.removeEventListener('mousemove', (e) => {mouseResize(e)});
             window.removeEventListener('mouseup', (e) => {stopDrag(e)});
         }
-    },[])
+    },[]);
     
     const taskBarAnimation = (() => {
         if (!barStatus.dragging && !barStatus.leftResizing && !barStatus.rightResizing) {
