@@ -22,8 +22,8 @@ services:
     image: postgres:15
     container_name: database
     volumes:
-      - ./services/ai/db/init:/docker-entrypoint-initdb.d
-      - ./services/ai/db/data:/data
+      - ./backend/db/init:/docker-entrypoint-initdb.d
+      - ./backend/db/data:/data
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres

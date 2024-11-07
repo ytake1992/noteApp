@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { ReactNode } from 'react'
 
 import GanttTaskHeader from "./ganttTaskHeader";
 import type { headertitle } from "./ganttTaskHeader";
@@ -12,15 +11,10 @@ import { setProjectDate, getProjectFilter, setTaskDate } from '../../lib/dataLib
 
 import { getToday, dateAdd, getFirstDate, getLastDate, dateParse, dateFormat } from '../../lib/dateLib'
 
-
-export type frameProps = {
-    taskItems: ReactNode,
-    taskBarItems: ReactNode;
-} 
-
 export type dataType = {
     projects: projectType[];
     tasks: taskType[];
+    isLoading: boolean;
 }
 
 const Titles:headertitle[] = [
@@ -46,7 +40,7 @@ const Titles:headertitle[] = [
     },
 ]
 
-const GanttFrame:React.FC<dataType> = ({projects, tasks}) => {
+const GanttFrame:React.FC<dataType> = ({projects, tasks, isLoading}) => {
     const [calendarWidth, setCalendarWidth ] = useState<number>(0)
     const [calendarHeigth, setCalendarHeigth ] = useState<number>(0)
     const [startMonth, setStartMonth] = useState<Date>(getFirstDate(dateAdd(getToday(), -2, 'month')));
@@ -59,6 +53,11 @@ const GanttFrame:React.FC<dataType> = ({projects, tasks}) => {
         getWindowSize();
         window.addEventListener('resize', getWindowSize)
     },[]);
+    
+    useEffect(() => {
+        setRefProjectData(setProjectDate(projects, tasks));
+        setRefTaskDate(setTaskDate(tasks));
+    },[projects, tasks]);
     
     const getWindowSize = () => {
         const taskContent = document.getElementById('gantt-task-title');
@@ -116,7 +115,7 @@ const GanttFrame:React.FC<dataType> = ({projects, tasks}) => {
                     )
                 })}
             </div>
-
+            
             <GanttCalender {...calendarStatus} shiftMonthFn={shiftMonth}>
                 <TaskBarItems projects={refProjectData} tasks={refTaskData} {...calendarStatus} taskMove={taskMove}/>
             </GanttCalender>

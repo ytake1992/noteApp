@@ -112,12 +112,10 @@ const TaskBarItems:React.FC<dataType> = ({start, end, blockSize, calendarWidth, 
     useEffect(() => {
         window.addEventListener('mousemove', (e) => {mouseMove(e)});
         window.addEventListener('mousemove', (e) => {mouseResize(e)});
-        window.addEventListener('mouseup', (e) => {stopDrag(e)});
         
         return () => {
             window.removeEventListener('mousemove', (e) => {mouseMove(e)});
             window.removeEventListener('mousemove', (e) => {mouseResize(e)});
-            window.removeEventListener('mouseup', (e) => {stopDrag(e)});
         }
     },[]);
     
@@ -222,21 +220,21 @@ const TaskBarItems:React.FC<dataType> = ({start, end, blockSize, calendarWidth, 
             {taskBars.projects.map((project: projectBarType, index: Key) => {
                 return (
                     <div key={index}>
-                        <div style={project.style} className="rounded-lg absolute h-5 bg-lime-100" v-if="bar.list.cat === 'task'">
+                        <div style={project.style} className="rounded-lg absolute h-5 bg-lime-100">
                             <div className="w-full h-full">
                             </div>
                         </div>
                         {taskBars.tasks.filter((task: taskBarType) => task.task.projectId === project.project.id).map((task:taskBarType, taskIndex:number) => {
                             return (
-                                <div key={taskIndex} style={task.style} className="rounded-lg absolute h-5 bg-yellow-100" onMouseDown={(e) => {mouseDownMove(e, task.task)}}>
+                                <div key={taskIndex} style={task.style} className="rounded-lg absolute h-5 bg-yellow-100" onMouseDown={(e) => {mouseDownMove(e, task.task)}} onMouseUp={e => (stopDrag(e))}>
                                     <div className="w-full h-full pointer-events-none">
                                         <div className={`h-full bg-yellow-500 rounded-l-lg pointer-events-none ${task.task.progress === 100?'rounded-r-lg':''}`}
                                             style={{width:`${task.task.progress}%`}}>
                                         </div>
                                     </div>
-                                    <div className="absolute w-2 h-full" style={{top:'0px',left:'0px',cursor:'col-resize'}} onMouseDown={(e) => {mouseDownResize(e, task.task, 'left')}}>
+                                    <div className="absolute w-2 h-full" style={{top:'0px',left:'0px',cursor:'col-resize'}} onMouseDown={(e) => {mouseDownResize(e, task.task, 'left')}} onMouseUp={e => (stopDrag(e))}>
                                     </div>
-                                    <div className="absolute w-2 h-full" style={{top:'0px',right:'0px',cursor:'col-resize'}} onMouseDown={(e) => {mouseDownResize(e, task.task, 'right')}}>
+                                    <div className="absolute w-2 h-full" style={{top:'0px',right:'0px',cursor:'col-resize'}} onMouseDown={(e) => {mouseDownResize(e, task.task, 'right')}} onMouseUp={e => (stopDrag(e))}>
                                     </div>
                                 </div>
                             )
