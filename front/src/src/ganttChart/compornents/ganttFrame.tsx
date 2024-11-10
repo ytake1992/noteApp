@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 import GanttTaskHeader from "./ganttTaskHeader";
 import type { headertitle } from "./ganttTaskHeader";
@@ -9,7 +9,7 @@ import TaskBarItems from './taskBarItems';
 import type { projectType, taskType } from '../type/dataType';
 import { setProjectDate, getProjectFilter, setTaskDate } from '../../lib/dataLib';
 
-import { getToday, dateAdd, getFirstDate, getLastDate, dateParse, dateFormat } from '../../lib/dateLib'
+import { getToday, dateAdd, getFirstDate, getLastDate } from '../../lib/dateLib'
 
 export type dataType = {
     projects: projectType[];
@@ -82,17 +82,9 @@ const GanttFrame:React.FC<dataType> = ({projects, tasks, isLoading}) => {
         setEndMonth(newEndMonth);
     }
 
-    const taskMove = (taskId:number, startOffset:number, endOffset:number) => {
-        let newTasks = tasks;
-        let newTask = newTasks.find(task => task.id === taskId);
-        if (newTask) {
-            let startDate = dateAdd(dateParse(newTask.startDate,'yyyy-MM-dd'), startOffset, 'day');
-            let endDate = dateAdd(dateParse(newTask.endDate,'yyyy-MM-dd'), endOffset, 'day');
-            newTask['startDate'] = dateFormat(startDate,'yyyy-MM-dd');
-            newTask['endDate'] = dateFormat(endDate,'yyyy-MM-dd');
-        }
-        setRefProjectData(setProjectDate(projects, newTasks));
-        setRefTaskDate(setTaskDate(newTasks));
+    const updateTasks = (projects:projectType[], tasks:taskType[]) => {
+        setRefProjectData(setProjectDate(projects, tasks));
+        setRefTaskDate(setTaskDate(tasks));
     }
     
     const setCollapsed = (projectId:number) => {
@@ -117,7 +109,9 @@ const GanttFrame:React.FC<dataType> = ({projects, tasks, isLoading}) => {
             </div>
             
             <GanttCalender {...calendarStatus} shiftMonthFn={shiftMonth}>
-                <TaskBarItems projects={refProjectData} tasks={refTaskData} {...calendarStatus} taskMove={taskMove}/>
+                {isLoading &&
+                    <TaskBarItems projects={refProjectData} tasks={refTaskData} {...calendarStatus} updateTasks={updateTasks}/>
+                }
             </GanttCalender>
         </div>
     )

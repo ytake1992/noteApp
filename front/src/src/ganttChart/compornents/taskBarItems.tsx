@@ -1,5 +1,5 @@
-import { CSSProperties, Key, useEffect } from "react";
-import { dateDiff, dateParse } from "../../lib/dateLib";
+import { CSSProperties, Key, useEffect, useRef } from "react";
+import { dateAdd, dateDiff, dateFormat, dateParse } from "../../lib/dateLib";
 import type { calenderStatus } from "./ganttCalender";
 import { getProjectFilter } from '../../lib/dataLib'
 
@@ -9,7 +9,7 @@ type dataType = calenderStatus & {
     projects: projectType[];
     tasks: taskType[];
     blockSize: number;
-    taskMove:Function;
+    updateTasks:Function;
 }
 
 export type projectBarType = { 
@@ -48,7 +48,11 @@ let barStatus:barStatusType = {
     animationWidth : 0,
 }
 
-const TaskBarItems:React.FC<dataType> = ({start, end, blockSize, calendarWidth, calendarHeigth, projects, tasks, taskMove}) => {
+const TaskBarItems:React.FC<dataType> = ({start, end, blockSize, calendarWidth, calendarHeigth, projects, tasks, updateTasks}) => {
+    const refProjects = useRef<projectType[]>(projects);
+    const refTasks = useRef<taskType[]>(tasks);
+    refProjects.current = projects;
+    refTasks.current = tasks;
     const getTaskBars = (projects:projectType[], tasks:taskType[]) => {
         let startDate = new Date(start.getTime());
         let top = 10;
@@ -112,12 +116,25 @@ const TaskBarItems:React.FC<dataType> = ({start, end, blockSize, calendarWidth, 
     useEffect(() => {
         window.addEventListener('mousemove', (e) => {mouseMove(e)});
         window.addEventListener('mousemove', (e) => {mouseResize(e)});
-        
+        window.addEventListener('mouseup', (e) => {stopDrag(e)});
         return () => {
             window.removeEventListener('mousemove', (e) => {mouseMove(e)});
             window.removeEventListener('mousemove', (e) => {mouseResize(e)});
+            window.removeEventListener('mouseup', (e) => {stopDrag(e)});
         }
-    },[]);
+    });
+
+    const taskMove = (taskId:number, startOffset:number, endOffset:number) => {
+        let newTasks = refTasks.current;
+        let newTask = newTasks.find(task => task.id === taskId);
+        if (newTask) {
+            let startDate = dateAdd(dateParse(newTask.startDate,'yyyy-MM-dd'), startOffset, 'day');
+            let endDate = dateAdd(dateParse(newTask.endDate,'yyyy-MM-dd'), endOffset, 'day');
+            newTask['startDate'] = dateFormat(startDate,'yyyy-MM-dd');
+            newTask['endDate'] = dateFormat(endDate,'yyyy-MM-dd');
+        }
+        updateTasks(refProjects.current, newTasks)
+    }
     
     const taskBarAnimation = (() => {
         if (!barStatus.dragging && !barStatus.leftResizing && !barStatus.rightResizing) {
@@ -226,15 +243,15 @@ const TaskBarItems:React.FC<dataType> = ({start, end, blockSize, calendarWidth, 
                         </div>
                         {taskBars.tasks.filter((task: taskBarType) => task.task.projectId === project.project.id).map((task:taskBarType, taskIndex:number) => {
                             return (
-                                <div key={taskIndex} style={task.style} className="rounded-lg absolute h-5 bg-yellow-100" onMouseDown={(e) => {mouseDownMove(e, task.task)}} onMouseUp={e => (stopDrag(e))}>
+                                <div key={taskIndex} style={task.style} className="rounded-lg absolute h-5 bg-yellow-100" onMouseDown={(e) => {mouseDownMove(e, task.task)}}>
                                     <div className="w-full h-full pointer-events-none">
                                         <div className={`h-full bg-yellow-500 rounded-l-lg pointer-events-none ${task.task.progress === 100?'rounded-r-lg':''}`}
                                             style={{width:`${task.task.progress}%`}}>
                                         </div>
                                     </div>
-                                    <div className="absolute w-2 h-full" style={{top:'0px',left:'0px',cursor:'col-resize'}} onMouseDown={(e) => {mouseDownResize(e, task.task, 'left')}} onMouseUp={e => (stopDrag(e))}>
+                                    <div className="absolute w-2 h-full" style={{top:'0px',left:'0px',cursor:'col-resize'}} onMouseDown={(e) => {mouseDownResize(e, task.task, 'left')}}>
                                     </div>
-                                    <div className="absolute w-2 h-full" style={{top:'0px',right:'0px',cursor:'col-resize'}} onMouseDown={(e) => {mouseDownResize(e, task.task, 'right')}} onMouseUp={e => (stopDrag(e))}>
+                                    <div className="absolute w-2 h-full" style={{top:'0px',right:'0px',cursor:'col-resize'}} onMouseDown={(e) => {mouseDownResize(e, task.task, 'right')}}>
                                     </div>
                                 </div>
                             )
