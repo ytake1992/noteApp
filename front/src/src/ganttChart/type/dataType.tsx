@@ -3,6 +3,7 @@ export type projectType = {
         name: string;
         startDate: string | null;
         endDate: string | null;
+        collapsed:boolean;
 };
     
 export type taskType = {
